@@ -11,7 +11,7 @@ baio = np.zeros((deka, deka))
 on = int((deka - 1) / 2)
 baio[on, on] = -1
 t = 0
-MAXT = 50                 #分裂回数
+MAXT = 70                 #分裂回数
 
 #ランダムで分裂する奴をマイナスにする関数
 def bunretumainasu():
@@ -89,6 +89,7 @@ def houkoukime():
         bunretu(1, 1)
 
 #実行部
+
 motoi = on
 motoj = on
 motoiti = baio[motoi, motoj]
@@ -128,4 +129,6 @@ while t <= MAXT:
     t += 1
     w = plt.imshow(baio, cmap="tab20")
     w.set_data(baio)
-    plt.pause(0.01)
+    plt.pause(0.005)
+    if t == 10:
+        plt.colorbar()
