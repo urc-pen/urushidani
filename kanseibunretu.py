@@ -89,7 +89,9 @@ def houkoukime():
         bunretu(1, 1)
 
 #実行部
-
+w = plt.imshow(baio, cmap=plt.cm.get_cmap("tab20", 8))
+plt.colorbar(extend="both")
+plt.clim(0,7)
 motoi = on
 motoj = on
 motoiti = baio[motoi, motoj]
@@ -127,8 +129,6 @@ while t <= MAXT:
 
     mainasureset()
     t += 1
-    w = plt.imshow(baio, cmap="tab20")
+    w = plt.imshow(baio, cmap=plt.cm.get_cmap("tab20", 8))
     w.set_data(baio)
-    plt.pause(0.005)
-    if t == 10:
-        plt.colorbar()
+    plt.pause(0.001)
