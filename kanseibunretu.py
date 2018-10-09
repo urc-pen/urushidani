@@ -6,14 +6,14 @@ import pandas as pd
 import matplotlib as mpl
 import seaborn as sns
 import sys
-np.set_printoptions(threshold=np.inf)
+import fractions
 #deka*dekaのbaioというフィールドを作って、原点の座標(on,on)＝1と定めた。
-deka = 55                   #フィールドの大きさ
+deka = 101                   #フィールドの大きさ
 baio = np.zeros((deka, deka))
 on = int((deka - 1) / 2)
 baio[on, on] = -1
 t = 0
-MAXT = 9                #分裂回数
+MAXT = 25             #分裂回数
 
 #ランダムで分裂する奴をマイナスにする関数
 def bunretumainasu():
@@ -77,6 +77,8 @@ def bunretu(mi,mj):
             baio[motoi + mi, motoj + mj] = motoiti * -1
             baio[motoi, motoj] = motoiti * -1
 
+
+
 #分裂方向をランダムで決めて、そのままその方向に分裂させる。
 def houkoukime():
     bunretuhoukou = random.randint(0,7)
@@ -97,6 +99,107 @@ def houkoukime():
     if bunretuhoukou == 7:
         bunretu(1, 1)
 
+#分裂場所の空き具合によって方向の確率が決まって分裂する。
+def houkoukime2():
+    jamakazu = []
+    for mmi in range(-1, 2):
+        for mmj in range(-1, 2):
+            if mmi != 0 or mmj != 0:
+                itii = motoi + mmi
+                itij = motoj + mmj
+                bunretuiti = baio[itii, itij]
+                if bunretuiti == 0:
+                    jamakazu.append(1)
+                else:
+                    while bunretuiti != 0 and itii != 0 and itii != deka - 1 and itij != 0 and itij != deka-1:
+                        jama = 1
+                        jama += 1
+                        itii += mmi
+                        itij += mmj
+                        bunretuiti = baio[itii, itij]
+                    if bunretuiti == 0:
+                        jamakazu.append(jama)
+                    if itii == 0 or itii == deka - 1 or itij == 0 or itij == deka - 1:
+                        jamakazu.append(0)
+            else:
+                pass
+
+    jamawari = []
+    for i in range(0, 8):
+        if jamakazu[i] == 0:
+            jamawari.append(0)
+        else:
+            jamawari.append(fractions.Fraction(1, jamakazu[i]))
+    jamasum = sum(jamawari)
+    houkouwari = []
+    for i in range(0, 8):
+        if jamawari[i] == 0:
+            houkouwari.append(0)
+        else:
+            houkouwari.append(fractions.Fraction(jamawari[i], jamasum))
+
+    if sum(houkouwari) == 1:
+        bunretuhoukou = np.random.choice([0,1,2,3,4,5,6,7], p=houkouwari)
+        if bunretuhoukou == 0:
+            bunretu(-1, -1)
+        if bunretuhoukou == 1:
+            bunretu(-1, 0)
+        if bunretuhoukou == 2:
+            bunretu(-1, 1)
+        if bunretuhoukou == 3:
+            bunretu(0, -1)
+        if bunretuhoukou == 4:
+            bunretu(0, 1)
+        if bunretuhoukou == 5:
+            bunretu(1, -1)
+        if bunretuhoukou == 6:
+            bunretu(1, 0)
+        if bunretuhoukou == 7:
+            bunretu(1, 1)
+    else:
+        baio[motoi, motoj] = baio[motoi, motoj] * -1
+
+#空いている場所にしか分裂しない。
+def houkoukime3():
+    houkouwari = []
+    jamakazu = []
+    for mmi in range(-1, 2):
+        for mmj in range(-1, 2):
+            if mmi != 0 or mmj != 0:
+                itii = motoi + mmi
+                itij = motoj + mmj
+                bunretuiti = baio[itii, itij]
+                if bunretuiti == 0:
+                    jamakazu.append(1)
+                else:
+                    jamakazu.append(0)
+    for i in range(0, 8):
+        if sum(jamakazu) != 0:
+            houkouwari.append(fractions.Fraction(jamakazu[i], sum(jamakazu)))
+        else:
+            houkouwari = [0, 0, 0, 0, 0, 0, 0, 0]
+    if sum(houkouwari) == 1:
+        bunretuhoukou = np.random.choice([0,1,2,3,4,5,6,7], p=houkouwari)
+        if bunretuhoukou == 0:
+            bunretu(-1, -1)
+        if bunretuhoukou == 1:
+            bunretu(-1, 0)
+        if bunretuhoukou == 2:
+            bunretu(-1, 1)
+        if bunretuhoukou == 3:
+            bunretu(0, -1)
+        if bunretuhoukou == 4:
+            bunretu(0, 1)
+        if bunretuhoukou == 5:
+            bunretu(1, -1)
+        if bunretuhoukou == 6:
+            bunretu(1, 0)
+        if bunretuhoukou == 7:
+            bunretu(1, 1)
+    else:
+        baio[motoi, motoj] = baio[motoi, motoj] * -1
+
+
 #実行部
 w = plt.imshow(baio, cmap=plt.cm.get_cmap("tab20", 8))
 plt.colorbar(extend="both")
@@ -104,7 +207,7 @@ plt.clim(0,7)
 motoi = on
 motoj = on
 motoiti = baio[motoi, motoj]
-houkoukime()
+houkoukime2()
 
 while t <= MAXT:
     bunretumainasu()
@@ -112,32 +215,32 @@ while t <= MAXT:
     motoi = on
     motoj = on
     motoiti = baio[motoi, motoj]
-    houkoukime()
+    houkoukime2()
     for r in range(0, on):
         for k in range(0, 2 * r):
             if baio[on - r, on - r + k] < 0:
                 motoi = on - r
                 motoj = on - r + k
                 motoiti = baio[motoi, motoj]
-                houkoukime()
+                houkoukime2()
         for k in range(0, 2 * r):
             if baio[on - r + k, on + r] < 0:
                 motoi = on - r + k
                 motoj = on + r
                 motoiti = baio[motoi, motoj]
-                houkoukime()
+                houkoukime2()
         for k in range(0, 2 * r):
             if baio[on + r, on + r - k] < 0:
                 motoi = on + r
                 motoj = on + r - k
                 motoiti = baio[motoi, motoj]
-                houkoukime()
+                houkoukime2()
         for k in range(0, 2 * r):
             if baio[on + r - k, on - r] < 0:
                 motoi = on + r - k
                 motoj = on - r
                 motoiti = baio[motoi, motoj]
-                houkoukime()
+                houkoukime2()
 
     mainasureset()
     t += 1
