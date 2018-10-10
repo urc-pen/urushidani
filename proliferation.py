@@ -11,16 +11,21 @@ import fractions
 #argparseの部分
 import argparse
 parser = argparse.ArgumentParser()
-parser.add_argument("func", choices=["dire1", "dire2", "dire3"])
-parser.add_argument("size", type=int)
-parser.add_argument("MAXT", type=int)
-parser.add_argument("rate", type=float)
+parser.add_argument("--func", "-f", choices=["dire1", "dire2", "dire3"], default="dire2")
+parser.add_argument("--size", "-s", type=int, default=203)
+parser.add_argument("--MAXT", "-mt", type=int, default=25)
+parser.add_argument("--rate", "-r", type=float, default=0.5)
 args = parser.parse_args()
 
 if args.size % 2 !=1:
     raise InvaridNumber("奇数を入力してください")
 if args.rate < 0 or args.rate > 1:
     raise InvaridNumber("0より大きく1以下の数値を入力してください")
+
+print("分裂方法:{}".format(args.func))
+print("フィールドの大きさ:{}".format(args.size))
+print("分裂サイクルの継続時間:{}".format(args.MAXT))
+print("分裂確率:{}".format(args.rate))
 
 #size*sizeのbaioというフィールドを作って、原点の座標(on,on)＝1と定めた。
 size = args.size                   #フィールドの大きさ
@@ -259,7 +264,7 @@ while t <= MAXT:
 
     mainasureset()
     t += 1
-    w = plt.imshow(baio, cmap=plt.cm.get_cmap("tab20", 8))
+    w = plt.imshow(baio,interpolation="nearest", cmap=plt.cm.get_cmap("tab20", 8))
     w.set_data(baio)
     plt.pause(0.005)
 for b in range(4, 8):
