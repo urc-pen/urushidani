@@ -13,7 +13,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--func", "-f", choices=["dire1", "dire2", "dire3"], default="dire2")
 parser.add_argument("--SIZE", "-s", type=int, default=203)
-parser.add_argument("--MAXT", "-mt", type=int, default=25)
+parser.add_argument("--MAXT", "-mt", type=int, default=22)
 parser.add_argument("--RATE", "-r", type=float, default=0.5)
 args = parser.parse_args()
 
