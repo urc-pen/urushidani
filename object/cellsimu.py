@@ -9,10 +9,10 @@ import seaborn
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--func", "-f", choices=["dire1", "dire2"], default="dire2")
-parser.add_argument("--SIZE", "-s", type=int, default=203)
-parser.add_argument("--MAXT", "-mt", type=int, default=15)
-parser.add_argument("--SHAPE","-sh", type=int, default=1)
-parser.add_argument("--SCALE","-sc", type=int, default=1)
+parser.add_argument("--SIZE", "-s", type=int, default=55)
+parser.add_argument("--MAXT", "-mt", type=int, default=60)
+parser.add_argument("--SHAPE","-sh", type=int, default=2)
+parser.add_argument("--SCALE","-sc", type=int, default=2)
 args = parser.parse_args()
 
 if args.SIZE % 2 !=1:
@@ -81,24 +81,26 @@ class Cell:
         obstacle_num = []
         for mi in range(-1, 2):
             for mj in range(-1, 2):
-                if mi != 0 or mj != 0:
-                    ni = self.i + mi
-                    nj = self.j + mj
-                    id = field[self.i, self.j]
-                    proposi = field[ni, nj]
-                    if proposi == -1:
-                        obstacle_num.append(1)
-                    else:
-                        while proposi != -1:
-                            obstacle = 1
-                            obstacle += 1
-                            ni += mi
-                            nj += mj
-                            proposi = field[ni, nj]
-                        if proposi == -1:
-                            obstacle_num.append(obstacle)
+                if mi == 0 and mj == 0:
+                    continue
+                ni = self.i + mi
+                nj = self.j + mj
+                id = field[self.i, self.j]
+                proposi = field[ni, nj]
+                if proposi == -1:
+                    obstacle_num.append(1)
                 else:
-                    pass
+                    while proposi != -1 and ni != 0 and ni != SIZE - 1 and nj != 0 and nj != SIZE - 1:
+                        obstacle = 1
+                        obstacle += 1
+                        ni += mi
+                        nj += mj
+                        proposi = field[ni, nj]
+                    if proposi == -1:
+                        obstacle_num.append(obstacle)
+                    if ni == 0 or ni == SIZE - 1 or nj == 0 or nj == SIZE - 1:
+                        obstacle_num.append(0)
+
 
         obstacle_ratio = []
         for i in range(0, 8):
