@@ -4,13 +4,13 @@ import math
 import fractions
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-from matplotlib.colors import LogNorm
+from matplotlib.colors import LinearSegmentedColormap
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--func", "-f", choices=["dire1", "dire2"], default="dire2")
 parser.add_argument("--SIZE", "-s", type=int, default=155)
-parser.add_argument("--AVERAGE", "-av", type=int, default=3)
-parser.add_argument("--DISPERSION", "-di", type=int, default=2)
+parser.add_argument("--AVERAGE", "-av", type=float, default=10)
+parser.add_argument("--DISPERSION", "-di", type=float, default=2)
 parser.add_argument("--MAXNUM", "-mn", type=int, default=7850)
 args = parser.parse_args()
 
@@ -34,11 +34,11 @@ class Janitor:
         Janitor.t = 0
         Janitor.n = 0
         Janitor.MAXNUM = args.MAXNUM
-        Janitor.threelist = []
-        Janitor.fourlist = []
-        Janitor.fivelist = []
-        Janitor.sixlist = []
-        Janitor.tlist = []
+        Janitor.threelist = [0]
+        Janitor.fourlist = [0]
+        Janitor.fivelist = [0]
+        Janitor.sixlist = [0]
+        Janitor.tlist = [0]
 
     @classmethod
     def set_field(cls):
@@ -51,21 +51,23 @@ class Janitor:
     @classmethod
     def first_heatmap_graph(cls):
         fig = plt.figure(figsize=(10, 5))
-        cmap = plt.cm.get_cmap("tab20", 7)
+        Janitor.colors = [(1, 1, 1), (0, 0.2, 0.8), (0, 0.3, 0.7) ,(0.5, 0, 0.5), (1, 0, 0), (0.2, 0.8, 1), (0.5, 0.8, 0.2)]
+        cmap_name = 'my_list'
+        Janitor.cm = LinearSegmentedColormap.from_list(cmap_name, Janitor.colors, N=7)
         defheatmap = Janitor.heatmap
         for n in range(0, 7):
             defheatmap[0, n] = n
         Janitor.ax1 = fig.add_subplot(1, 2, 1)
         Janitor.ax2 = fig.add_subplot(1, 2, 2)
-        Janitor.ax1.plot(Janitor.tlist, Janitor.threelist, label="3", color="saddlebrown")
-        Janitor.ax1.plot(Janitor.tlist, Janitor.fourlist, label="4", color="pink")
-        Janitor.ax1.plot(Janitor.tlist, Janitor.fivelist, label="5", color="yellowgreen")
-        Janitor.ax1.plot(Janitor.tlist, Janitor.sixlist, label="6", color="skyblue")
-        h = Janitor.ax2.imshow(defheatmap, cmap=cmap)
-        fig.colorbar(h, cmap=cmap)
+        Janitor.ax1.plot(Janitor.tlist, Janitor.threelist, label="3", color=Janitor.colors[3])
+        Janitor.ax1.plot(Janitor.tlist, Janitor.fourlist, label="4", color=Janitor.colors[4])
+        Janitor.ax1.plot(Janitor.tlist, Janitor.fivelist, label="5", color=Janitor.colors[5])
+        Janitor.ax1.plot(Janitor.tlist, Janitor.sixlist, label="6", color=Janitor.colors[6])
+        h = Janitor.ax2.imshow(defheatmap, cmap=Janitor.cm)
+        fig.colorbar(h, cmap=Janitor.cm)
         for n in range(0, 7):
             defheatmap[0, n] = 0
-        Janitor.ax2.imshow(defheatmap, cmap=cmap)
+        Janitor.ax2.imshow(defheatmap, cmap=Janitor.cm)
         Janitor.ax1.legend(loc='upper left')
         Janitor.ax1.set_title('The number of cell type')
         Janitor.ax2.set_title('Cell simuration')
@@ -73,12 +75,12 @@ class Janitor:
 
     @classmethod
     def plot_heatmap_graph(cls):
-        Janitor.ax1.plot(Janitor.tlist, Janitor.threelist, label="3", color="saddlebrown")
-        Janitor.ax1.plot(Janitor.tlist, Janitor.fourlist, label="4", color="pink")
-        Janitor.ax1.plot(Janitor.tlist, Janitor.fivelist, label="5", color="yellowgreen")
-        Janitor.ax1.plot(Janitor.tlist, Janitor.sixlist, label="6", color="skyblue")
-        Janitor.ax2.imshow(Janitor.heatmap,interpolation="nearest", cmap="tab20")
-        plt.pause(0.1)
+        Janitor.ax1.plot(Janitor.tlist, Janitor.threelist, label="3", color=Janitor.colors[3])
+        Janitor.ax1.plot(Janitor.tlist, Janitor.fourlist, label="4", color=Janitor.colors[4])
+        Janitor.ax1.plot(Janitor.tlist, Janitor.fivelist, label="5", color=Janitor.colors[5])
+        Janitor.ax1.plot(Janitor.tlist, Janitor.sixlist, label="6", color=Janitor.colors[6])
+        Janitor.ax2.imshow(Janitor.heatmap,interpolation="nearest", cmap=Janitor.cm)
+        plt.pause(0.05)
 
     @classmethod
     def count_cell_num(cls):
@@ -97,10 +99,6 @@ class Janitor:
         for n in range(3, 7):
             print("cell{}:{}個".format(n, np.sum(Janitor.heatmap == n)))
 
-
-
-
-
 class Cell:
 
     celllist = []
@@ -112,6 +110,7 @@ class Cell:
         self.waittime = 0
         self.count = 0
         self.proliferation = 0
+        self.die = 0
 
     @classmethod
     def set_first_cell(cls, field, on):
@@ -282,11 +281,36 @@ class Cell:
             self.waittime -= 1
 
     def update_heatmap(self, heatmap):
-        heatmap[self.i, self.j] = self.type
+        if self.die == 0:
+            heatmap[self.i, self.j] = self.type
 
+    def count_all(self, heatmap):
+        self.N = np.sum(heatmap == self.type)
 
+    def count_around(self, r, heatmap):
+        for i in range(self.i - r, self.i + r + 1):
+            for j in range(self.j - r, self.j + r + 1):
+                self.N = np.sum(heatmap[i, j] == self.type)
 
+    def waittime_logistic(self, K):
+        if self.N < K:
+            self.waittime = np.round(self.waittime / (1 - self.N / K))
+        elif self.N >= K:
+            self.waittime = 2
 
+    def decide_mortality(self, K):
+        if self.N < K and self.die == 0:
+            self.die = np.random.choice([0, 1], p=[1 - self.N / K, self.N / K])
+        elif self.N >= K or self.die == 1:
+            self.die = 1
+        else:
+            pass
+
+    def mortal(self, field):
+        if self.die == 1:
+            field[self.i, self.j] = -1
+        else:
+            pass
 
 #実行部
 if __name__ == '__main__':
@@ -297,16 +321,22 @@ if __name__ == '__main__':
     Janitor.first_heatmap_graph()
 
     while Janitor.n < Janitor.MAXNUM:
-
         for cell in Cell.celllist:
-            cell.waittime_minus()
-            cell.decide_prolife()
+            if cell.die == 0:
+                cell.waittime_minus()
+                cell.decide_prolife()
+            else:
+                pass
 
         Cell.radial_prolife(Janitor.field, Janitor.on)
 
         for cell in Cell.celllist:
             cell.waittime_gamma(Janitor.AVERAGE,  Janitor.DISPERSION)
+            cell.count_around(3, Janitor.heatmap)
+            cell.decide_mortality(49)
+            cell.mortal(Janitor.field)
             cell.update_heatmap(Janitor.heatmap)
+
         Janitor.append_cell_num()
         Janitor.plot_heatmap_graph()
         Janitor.count_cell_num()

@@ -6,14 +6,18 @@ import math
 import fractions
 import matplotlib.pyplot as plt
 import argparse
+from matplotlib.colors import LinearSegmentedColormap
 parser = argparse.ArgumentParser()
-parser.add_argument("--mutationrate", "-mr", default=0.01, type=float)
+parser.add_argument("--mutationrate", "-mr", default=0.05, type=float)
 args = parser.parse_args()
+
+print("ドライバー変異の起きる確率:{}".format(args.mutationrate))
 
 class Tumor_cell(Cell):
     def __init__(self, i, j):
         super().__init__(i, j)
         self.driver_mutation = 0
+        Janitor.mutationrate = args.mutationrate
 
     @classmethod
     def set_first_cell(cls, field, on):
@@ -34,26 +38,30 @@ class Tumor_cell(Cell):
         self.count += 1
         cell_new.count = self.count
         self.proliferation = 0
-        self.driver_mutation = np.random.choice([1, 0], p=[args.mutationrate, 1 - args.mutationrate])
-        cell_new.driver_mutation = np.random.choice([1, 0], p=[args.mutationrate, 1 - args.mutationrate])
-        if self.type <= 2:
-            cell_new.type = int(self.type * 2 + 2)
-            self.type = int(self.type * 2 + 1)
-        elif self.type > 2:
+        cell_new.driver_mutation = self.driver_mutation
+        if self.driver_mutation == 0:
+            self.driver_mutation = np.random.choice([1, 0], p=[args.mutationrate, 1 - args.mutationrate])
+        if cell_new.driver_mutation == 0:
+            cell_new.driver_mutation = np.random.choice([1, 0], p=[args.mutationrate, 1 - args.mutationrate])
+        if self.driver_mutation == 1:
+            self.type = 2
+        if cell_new.driver_mutation == 1:
+            cell_new.type = 2
+        if self.type == 0:
+            cell_new.type = 1
+            self.type = 1
+        elif self.type >= 1:
             cell_new.type = self.type
         else:
             pass
-        if self.driver_mutation == 1:
-            self.type = 7
-        if cell_new.driver_mutation == 1:
-            cell_new.type = 7
+
         cell_new.move(field)
         Cell.celllist.append(cell_new)
 
     def tumor_waittime_gamma(self, AVERAGE, DISPERSION):
         if self.waittime == 0:
-            SHAPE = ( AVERAGE / 2 ) ** 2 / DISPERSION
-            SCALE = DISPERSION / ( AVERAGE / 2 )
+            SHAPE = ( AVERAGE / 1.5 ) ** 2 / DISPERSION
+            SCALE = DISPERSION / ( AVERAGE / 1.5 )
             self.waittime = math.ceil(np.random.gamma(SHAPE / 2, SCALE / 2))
 
 
@@ -62,80 +70,46 @@ class Tumor_janitor(Janitor):
     @classmethod
     def receive_value(cls):
         super().receive_value()
-        Janitor.sevenlist = []
+        Janitor.t = 3
+        Janitor.onelist = [0]
+        Janitor.twolist = [0]
 
     @classmethod
     def append_cell_num(cls):
-        super().append_cell_num()
-        Janitor.sevenlist.append(np.sum(Janitor.heatmap == 7))
-
+        Janitor.onelist.append(np.sum(Janitor.heatmap == 1))
+        Janitor.twolist.append(np.sum(Janitor.heatmap == 2))
+        Janitor.tlist.append(Janitor.t)
 
     @classmethod
     def first_heatmap_graph(cls):
         fig = plt.figure(figsize=(10, 5))
-        cmap = plt.cm.get_cmap("tab20", 8)
+        Janitor.colors = [(1, 1, 1), (0.2, 0.8, 1), (0.5, 0.8, 0.2)]
+        cmap_name = 'my_list'
+        Janitor.cm = LinearSegmentedColormap.from_list(cmap_name, Janitor.colors, N=3)
         defheatmap = Janitor.heatmap
-        for n in range(0, 8):
+        for n in range(0, 3):
             defheatmap[0, n] = n
         Janitor.ax1 = fig.add_subplot(1, 2, 1)
         Janitor.ax2 = fig.add_subplot(1, 2, 2)
-        Janitor.ax1.plot(Janitor.tlist, Janitor.threelist, label="3", color="MediumPurple")
-        Janitor.ax1.plot(Janitor.tlist, Janitor.fourlist, label="4", color="RosyBrown")
-        Janitor.ax1.plot(Janitor.tlist, Janitor.fivelist, label="5", color="Gray")
-        Janitor.ax1.plot(Janitor.tlist, Janitor.sixlist, label="6", color="Khaki")
-        Janitor.ax1.plot(Janitor.tlist, Janitor.sevenlist, label="7", color="skyblue")
-        h = Janitor.ax2.imshow(defheatmap, cmap=cmap)
-        fig.colorbar(h, cmap=cmap)
-        for n in range(0, 8):
+        Janitor.ax1.plot(Janitor.tlist, Janitor.onelist, label="1: no mutation", color=Janitor.colors[1])
+        Janitor.ax1.plot(Janitor.tlist, Janitor.twolist, label="2: driver mutation", color=Janitor.colors[2])
+        h = Janitor.ax2.imshow(defheatmap, cmap=Janitor.cm)
+        fig.colorbar(h, cmap=Janitor.cm)
+        for n in range(0, 3):
             defheatmap[0, n] = 0
-        Janitor.ax2.imshow(defheatmap, cmap=cmap)
+        Janitor.ax2.imshow(defheatmap, cmap=Janitor.cm)
         Janitor.ax1.legend(loc='upper left')
         Janitor.ax1.set_title('The number of cell type')
         Janitor.ax2.set_title('Cell simuration')
 
     @classmethod
     def plot_heatmap_graph(cls):
-        Janitor.ax1.plot(Janitor.tlist, Janitor.threelist, label="3", color="MediumPurple")
-        Janitor.ax1.plot(Janitor.tlist, Janitor.fourlist, label="4", color="RosyBrown")
-        Janitor.ax1.plot(Janitor.tlist, Janitor.fivelist, label="5", color="Gray")
-        Janitor.ax1.plot(Janitor.tlist, Janitor.sixlist, label="6", color="Khaki")
-        Janitor.ax1.plot(Janitor.tlist, Janitor.sevenlist, label="7", color="skyblue")
-        Janitor.ax2.imshow(Janitor.heatmap,interpolation="nearest", cmap="tab20")
-        plt.pause(0.1)
+        Janitor.ax1.plot(Janitor.tlist, Janitor.onelist, label="1: no mutation", color=Janitor.colors[1])
+        Janitor.ax1.plot(Janitor.tlist, Janitor.twolist, label="2: driver mutation", color=Janitor.colors[2])
+        Janitor.ax2.imshow(Janitor.heatmap,interpolation="nearest", cmap=Janitor.cm)
+        plt.pause(0.01)
 
     @classmethod
     def count(cls):
-        super().count()
-        print("cell{}:{}個".format(7, np.sum(Janitor.heatmap == 7)))
-
-
-#実行部
-if __name__ == '__main__':
-    Tumor_janitor.receive_value()
-    Janitor.set_field()
-    Janitor.set_heatmap()
-    Tumor_cell.set_first_cell(Janitor.field, Janitor.on)
-    Tumor_janitor.first_heatmap_graph()
-
-    while Janitor.n < Janitor.MAXNUM:
-
-        for cell in Cell.celllist:
-            cell.waittime_minus()
-            cell.decide_prolife()
-
-        Cell.radial_prolife(Janitor.field, Janitor.on)
-
-        for cell in Cell.celllist:
-            if cell.driver_mutation == 1:
-                cell.tumor_waittime_gamma(Janitor.AVERAGE, Janitor.DISPERSION)
-            else:
-                cell.waittime_gamma(Janitor.AVERAGE,  Janitor.DISPERSION)
-            cell.update_heatmap(Janitor.heatmap)
-        Tumor_janitor.append_cell_num()
-        Tumor_janitor.plot_heatmap_graph()
-        Janitor.count_cell_num()
-        Janitor.t += 1
-
-        if Janitor.n > Janitor.MAXNUM:
-            break
-    Tumor_janitor.count()
+        for n in range(1, 3):
+            print("cell{}:{}個".format(n, np.sum(Janitor.heatmap == n)))
