@@ -27,41 +27,38 @@ print("おおよその細胞周期:{}".format(args.AVERAGE))
 print("細胞周期のばらつき:{}".format(args.DISPERSION))
 print("環境収容力:{}".format(args.ENV))
 
-#実行部
-if __name__ == '__main__':
-    Janitor.receive_value(args.func, args.AVERAGE, args.DISPERSION, args.SIZE, args.MAXNUM, args.ENV)
-    Janitor.set_field()
-    Janitor.set_heatmap()
-    Cell.set_first_cell(Janitor.field, Janitor.on)
-    Janitor.first_heatmap_graph()
+Janitor.receive_value(args.func, args.AVERAGE, args.DISPERSION, args.SIZE, args.MAXNUM, args.ENV)
+Janitor.set_field()
+Janitor.set_heatmap()
+Cell.set_first_cell(Janitor.field, Janitor.on)
+Janitor.first_heatmap_graph()
 
-    while Janitor.n < Janitor.MAXNUM:
+while Janitor.n < Janitor.MAXNUM:
 
-        for cell in Cell.celllist:
-            if cell.dead == 0:
-                cell.waittime_minus()
-                cell.decide_prolife()
-            else:
-                pass
+    for cell in Cell.celllist:
+        if cell.dead == 0:
+            cell.waittime_minus()
+            cell.decide_prolife()
+        else:
+            pass
 
-        Cell.radial_prolife(Janitor.field, Janitor.on, Janitor.func)
-        Cell.countall(Janitor.heatmap)
-        Janitor.refresh_heatmap()
+    Cell.radial_prolife(Janitor.field, Janitor.on, Janitor.func)
 
-        for cell in Cell.celllist:
-            if cell.dead == 0:
-                cell.waittime_gamma(Janitor.AVERAGE,  Janitor.DISPERSION)
-                cell.dead_or_alive(Janitor.ENV, Janitor.field)
+    Cell.countall(Janitor.heatmap)
+    Janitor.refresh_heatmap()
 
-            cell.update_heatmap(Janitor.heatmap)
-            print("{}.{}.{}".  format(cell.dead, cell.id, cell.deathflag))
+    for cell in Cell.celllist:
+        if cell.dead == 0:
+            cell.waittime_gamma(Janitor.AVERAGE,  Janitor.DISPERSION)
+            cell.dead_or_alive(Janitor.ENV, Janitor.field)
+        cell.update_heatmap(Janitor.heatmap)
 
-        Janitor.append_cell_num()
-        Janitor.plot_heatmap_graph()
-        Janitor.count_cell_num()
-        Janitor.t += 1
-        print("psifspofksposfp{}".format(Janitor.n))
-        if Janitor.n >= Janitor.MAXNUM:
-            break
+    Janitor.append_cell_num()
+    Janitor.plot_heatmap_graph()
+    Janitor.count_cell_num()
+    Janitor.t += 1
 
-    Janitor.count()
+    if Janitor.n >= Janitor.MAXNUM:
+        break
+
+Janitor.count()
