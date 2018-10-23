@@ -27,6 +27,7 @@ class Janitor:
 
     @classmethod
     def receive_value(cls):
+        Janitor.func = args.func
         Janitor.AVERAGE = args.AVERAGE
         Janitor.DISPERSION = args.DISPERSION
         Janitor.SIZE = args.SIZE                    #フィールドの大きさ
@@ -244,26 +245,26 @@ class Cell:
             field[self.i, self.j] = self.id
 
     @classmethod
-    def radial_prolife(cls, field, on):
+    def radial_prolife(cls, field, on, func):
         if Cell.celllist[field[on, on]].proliferation == 1:
-            getattr(Cell.celllist[field[on, on]], args.func)(field)
+            getattr(Cell.celllist[field[on, on]], func)(field)
             Cell.celllist[field[on, on]].prolife(field)
         for r in range(0, on):
             for k in range(0, 2 * r):
                 if Cell.celllist[field[on - r, on - r + k]].proliferation == 1:
-                    getattr(Cell.celllist[field[on - r, on - r + k]], args.func)(field)
+                    getattr(Cell.celllist[field[on - r, on - r + k]], func)(field)
                     Cell.celllist[field[on - r, on - r + k]].prolife(field)
             for k in range(0, 2 * r):
                 if Cell.celllist[field[on - r + k, on + r]].proliferation == 1:
-                    getattr(Cell.celllist[field[on - r + k, on + r]], args.func)(field)
+                    getattr(Cell.celllist[field[on - r + k, on + r]], func)(field)
                     Cell.celllist[field[on - r + k, on + r]].prolife(field)
             for k in range(0, 2 * r):
                 if Cell.celllist[field[on + r, on + r - k]].proliferation == 1:
-                    getattr(Cell.celllist[field[on + r, on + r - k]], args.func)(field)
+                    getattr(Cell.celllist[field[on + r, on + r - k]], func)(field)
                     Cell.celllist[field[on + r, on + r - k]].prolife(field)
             for k in range(0, 2 * r):
                 if Cell.celllist[field[on + r - k, on - r]].proliferation == 1:
-                    getattr(Cell.celllist[field[on + r - k, on - r]], args.func)(field)
+                    getattr(Cell.celllist[field[on + r - k, on - r]], func)(field)
                     Cell.celllist[field[on + r - k, on - r]].prolife(field)
 
 
@@ -329,12 +330,12 @@ if __name__ == '__main__':
             else:
                 pass
 
-        Cell.radial_prolife(Janitor.field, Janitor.on)
+        Cell.radial_prolife(Janitor.field, Janitor.on, Janitor.func)
 
         for cell in Cell.celllist:
             cell.waittime_gamma(Janitor.AVERAGE,  Janitor.DISPERSION)
-            cell.count_around(3, Janitor.heatmap)
-            cell.decide_mortality(49)
+            cell.count_all(Janitor.heatmap)
+            cell.decide_mortality(1000)
             cell.mortal(Janitor.field)
             cell.update_heatmap(Janitor.heatmap)
 

@@ -21,7 +21,7 @@ if __name__ == '__main__':
             else:
                 pass
 
-        Cell.radial_prolife(Janitor.field, Janitor.on)
+        Tumor_cell.radial_prolife(Janitor.field, Janitor.on, Janitor.func, Janitor.mutationrate)
 
         for cell in Cell.celllist:
             if cell.die == 0:
@@ -33,6 +33,8 @@ if __name__ == '__main__':
             else:
                 pass
             cell.update_heatmap(Janitor.heatmap)
+            print("{}.". format(cell.die))
+
         Tumor_janitor.append_cell_num()
         Tumor_janitor.plot_heatmap_graph()
         Janitor.count_cell_num()
@@ -40,6 +42,6 @@ if __name__ == '__main__':
 
         if Janitor.n > Janitor.MAXNUM:
             break
+
     Tumor_janitor.count()
     Tumor_cell.list_adjust()
-    print(Tumor_cell.driver_list)

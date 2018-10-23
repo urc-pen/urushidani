@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import argparse
 from matplotlib.colors import LinearSegmentedColormap
 parser = argparse.ArgumentParser()
-parser.add_argument("--mutationrate", "-mr", default=0.1, type=float)
+parser.add_argument("--mutationrate", "-mr", default=0.0001, type=float)
 args = parser.parse_args()
 
 print("ドライバー変異の起きる確率:{}".format(args.mutationrate))
@@ -32,26 +32,26 @@ class Tumor_cell(Cell):
         Cell.celllist.append(first_cell)
         field[first_cell.i, first_cell.j] = first_cell.id
 
-    def prolife(self, field):
+    def prolife(self, field, mutationrate):
         ni = self.i + Cell.mi
         nj = self.j + Cell.mj
         cell_new = Tumor_cell(ni, nj)
         cell_new.id = len(Cell.celllist)
         self.count += 1
-        self.mutaion_id = self.mutation_id * 2
+        self.mutation_id = self.mutation_id * 2
         cell_new.mutation_id = self.mutation_id * 2 + 1
         cell_new.count = self.count
         self.proliferation = 0
         cell_new.driver_mutation = self.driver_mutation
 
         if self.driver_mutation == 0:
-            self.driver_mutation = np.random.choice([1, 0], p=[args.mutationrate, 1 - args.mutationrate])
+            self.driver_mutation = np.random.choice([1, 0], p=[mutationrate, 1 - mutationrate])
         if self.driver_mutation == 1:
             self.type = 2
             Tumor_cell.driver_list.append(self.mutation_id)
 
         if cell_new.driver_mutation == 0:
-            cell_new.driver_mutation = np.random.choice([1, 0], p=[args.mutationrate, 1 - args.mutationrate])
+            cell_new.driver_mutation = np.random.choice([1, 0], p=[mutationrate, 1 - mutationrate])
         if cell_new.driver_mutation == 1:
             cell_new.type = 2
             Tumor_cell.driver_list.append(cell_new.mutation_id)
@@ -67,6 +67,29 @@ class Tumor_cell(Cell):
 
         cell_new.move(field)
         Cell.celllist.append(cell_new)
+
+    @classmethod
+    def radial_prolife(cls, field, on, func, mutationrate):
+        if Cell.celllist[field[on, on]].proliferation == 1:
+            getattr(Cell.celllist[field[on, on]], func)(field)
+            Cell.celllist[field[on, on]].prolife(field, mutationrate)
+        for r in range(0, on):
+            for k in range(0, 2 * r):
+                if Cell.celllist[field[on - r, on - r + k]].proliferation == 1:
+                    getattr(Cell.celllist[field[on - r, on - r + k]], func)(field)
+                    Cell.celllist[field[on - r, on - r + k]].prolife(field, mutationrate)
+            for k in range(0, 2 * r):
+                if Cell.celllist[field[on - r + k, on + r]].proliferation == 1:
+                    getattr(Cell.celllist[field[on - r + k, on + r]], func)(field)
+                    Cell.celllist[field[on - r + k, on + r]].prolife(field, mutationrate)
+            for k in range(0, 2 * r):
+                if Cell.celllist[field[on + r, on + r - k]].proliferation == 1:
+                    getattr(Cell.celllist[field[on + r, on + r - k]], func)(field)
+                    Cell.celllist[field[on + r, on + r - k]].prolife(field, mutationrate)
+            for k in range(0, 2 * r):
+                if Cell.celllist[field[on + r - k, on - r]].proliferation == 1:
+                    getattr(Cell.celllist[field[on + r - k, on - r]], func)(field)
+                    Cell.celllist[field[on + r - k, on - r]].prolife(field, mutationrate)
 
     def tumor_waittime_gamma(self, AVERAGE, DISPERSION):
         if self.waittime == 0:
@@ -88,6 +111,7 @@ class Tumor_janitor(Janitor):
         Janitor.t = 3
         Janitor.onelist = [0]
         Janitor.twolist = [0]
+        Janitor.mutationrate = args.mutationrate
 
     @classmethod
     def append_cell_num(cls):
