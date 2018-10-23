@@ -8,16 +8,18 @@ import matplotlib.pyplot as plt
 import argparse
 from matplotlib.colors import LinearSegmentedColormap
 parser = argparse.ArgumentParser()
-parser.add_argument("--mutationrate", "-mr", default=0.05, type=float)
+parser.add_argument("--mutationrate", "-mr", default=0.1, type=float)
 args = parser.parse_args()
 
 print("ドライバー変異の起きる確率:{}".format(args.mutationrate))
 
 class Tumor_cell(Cell):
+    driver_list = []
     def __init__(self, i, j):
         super().__init__(i, j)
         self.driver_mutation = 0
         Janitor.mutationrate = args.mutationrate
+        self.mutation_id = 1
 
     @classmethod
     def set_first_cell(cls, field, on):
@@ -36,22 +38,30 @@ class Tumor_cell(Cell):
         cell_new = Tumor_cell(ni, nj)
         cell_new.id = len(Cell.celllist)
         self.count += 1
+        self.mutaion_id = self.mutation_id * 2
+        cell_new.mutation_id = self.mutation_id * 2 + 1
         cell_new.count = self.count
         self.proliferation = 0
         cell_new.driver_mutation = self.driver_mutation
+
         if self.driver_mutation == 0:
             self.driver_mutation = np.random.choice([1, 0], p=[args.mutationrate, 1 - args.mutationrate])
-        if cell_new.driver_mutation == 0:
-            cell_new.driver_mutation = np.random.choice([1, 0], p=[args.mutationrate, 1 - args.mutationrate])
         if self.driver_mutation == 1:
             self.type = 2
+            Tumor_cell.driver_list.append(self.mutation_id)
+
+        if cell_new.driver_mutation == 0:
+            cell_new.driver_mutation = np.random.choice([1, 0], p=[args.mutationrate, 1 - args.mutationrate])
         if cell_new.driver_mutation == 1:
             cell_new.type = 2
+            Tumor_cell.driver_list.append(cell_new.mutation_id)
+
         if self.type == 0:
             cell_new.type = 1
             self.type = 1
         elif self.type >= 1:
             cell_new.type = self.type
+            self.type = self.type
         else:
             pass
 
@@ -63,6 +73,11 @@ class Tumor_cell(Cell):
             SHAPE = ( AVERAGE / 1.5 ) ** 2 / DISPERSION
             SCALE = DISPERSION / ( AVERAGE / 1.5 )
             self.waittime = math.ceil(np.random.gamma(SHAPE / 2, SCALE / 2))
+
+    @classmethod
+    def list_adjust(cls):
+        Tumor_cell.driver_list = list(set(Tumor_cell.driver_list))
+        Tumor_cell.driver_list.sort()
 
 
 

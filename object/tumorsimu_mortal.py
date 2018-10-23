@@ -2,6 +2,8 @@ from tumorsimu import Tumor_cell
 from tumorsimu import Tumor_janitor
 from cellsimu import Cell
 from cellsimu import Janitor
+import argparse
+
 #実行部
 if __name__ == '__main__':
     Tumor_janitor.receive_value()
@@ -24,10 +26,10 @@ if __name__ == '__main__':
         for cell in Cell.celllist:
             if cell.die == 0:
                 cell.waittime_gamma(Janitor.AVERAGE,  Janitor.DISPERSION)
-            if cell.driver_mutation == 0 and cell.die == 0:
-                cell.count_all(Janitor.heatmap)
-                cell.decide_mortality(8000)
-                cell.mortal(Janitor.field)
+                if cell.driver_mutation == 0:
+                    cell.count_all(Janitor.heatmap)
+                    cell.decide_mortality(2000)
+                    cell.mortal(Janitor.field)
             else:
                 pass
             cell.update_heatmap(Janitor.heatmap)
@@ -39,3 +41,5 @@ if __name__ == '__main__':
         if Janitor.n > Janitor.MAXNUM:
             break
     Tumor_janitor.count()
+    Tumor_cell.list_adjust()
+    print(Tumor_cell.driver_list)

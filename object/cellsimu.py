@@ -111,6 +111,7 @@ class Cell:
         self.count = 0
         self.proliferation = 0
         self.die = 0
+        self.num = 0
 
     @classmethod
     def set_first_cell(cls, field, on):
@@ -285,23 +286,23 @@ class Cell:
             heatmap[self.i, self.j] = self.type
 
     def count_all(self, heatmap):
-        self.N = np.sum(heatmap == self.type)
+        self.num = np.sum(heatmap == self.type)
 
     def count_around(self, r, heatmap):
         for i in range(self.i - r, self.i + r + 1):
             for j in range(self.j - r, self.j + r + 1):
-                self.N = np.sum(heatmap[i, j] == self.type)
+                self.num = np.sum(heatmap[i, j] == self.type)
 
     def waittime_logistic(self, K):
-        if self.N < K:
-            self.waittime = np.round(self.waittime / (1 - self.N / K))
-        elif self.N >= K:
+        if self.num < K:
+            self.waittime = np.round(self.waittime / (1 - self.num / K))
+        elif self.num >= K:
             self.waittime = 2
 
-    def decide_mortality(self, K):
-        if self.N < K and self.die == 0:
-            self.die = np.random.choice([0, 1], p=[1 - self.N / K, self.N / K])
-        elif self.N >= K or self.die == 1:
+    def decide_mortality(self, ENV):
+        if self.num < ENV and self.die == 0:
+            self.die = np.random.choice([0, 1], p=[1 - self.num / ENV, self.num / ENV])
+        elif self.num >= ENV or self.die == 1:
             self.die = 1
         else:
             pass
