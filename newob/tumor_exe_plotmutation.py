@@ -9,6 +9,7 @@ from Cell import Cell
 from Janitor import Janitor
 from Tumorcell import Tumor_cell
 from Tumorjanitor import Tumor_janitor
+from Plotter import Plotter
 
 import argparse
 parser = argparse.ArgumentParser()
@@ -19,7 +20,8 @@ parser.add_argument("--DISPERSION", "-di", type=float, default=2)
 parser.add_argument("--MAXNUM", "-ma", type=int, default=3000)
 parser.add_argument("--ENV", "-en", default=4000)
 parser.add_argument("--MTRATE", "-mt", default=0.01, type=float)
-parser.add_argument("--INTERVAL", "-in", default=5, type=int)
+parser.add_argument("--INTERVAL", "-in", default=50, type=int)
+parser.add_argument("--POISSON", "-po", default=1)
 args = parser.parse_args()
 
 if args.SIZE % 2 != 1:
@@ -33,6 +35,7 @@ print("細胞周期のばらつき:{}".format(args.DISPERSION))
 print("環境収容力:{}".format(args.ENV))
 print("ドライバー変異の起きる確率:{}".format(args.MTRATE))
 print("描画のインターバル:{}".format(args.INTERVAL))
+print("ポアソン分布の期待値:{}".format(args.POISSON))
 
 Tumor_janitor.receive_value(args.func, args.AVERAGE, args.DISPERSION, args.SIZE, args.MAXNUM, args.ENV, args.MTRATE, args.INTERVAL)
 Janitor.set_field()
@@ -71,4 +74,7 @@ while Janitor.n < Janitor.MAXNUM:
 
 Tumor_janitor.count()
 Tumor_cell.list_adjust()
-print(Tumor_cell.driver_list)
+Tumor_cell.make_idlist(Janitor.field)
+Plotter.receive_value(args.POISSON)
+Plotter.plot_mutation(Tumor_cell.idlist, Tumor_cell.driver_list, Plotter.POISSON)
+Plotter.df.to_csv("mutationplot.csv")

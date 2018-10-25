@@ -113,3 +113,10 @@ class Tumor_cell(Cell):
     @classmethod
     def list_adjust(cls):
         Tumor_cell.driver_list.sort()
+
+    @classmethod
+    def make_idlist(cls, field):
+        Tumor_cell.idlist = []
+        refid = np.random.choice(field[field > -1], 100, replace=False)
+        for i in refid:
+            Tumor_cell.idlist.append(Cell.celllist[i].mutation_id)

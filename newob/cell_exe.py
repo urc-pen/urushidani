@@ -9,11 +9,11 @@ import argparse
 from Cell import Cell
 from Janitor import Janitor
 parser = argparse.ArgumentParser()
-parser.add_argument("--func", "-f", choices=["dire1", "dire2"], default="dire2")
-parser.add_argument("--SIZE", "-s", type=int, default=155)
+parser.add_argument("--func", "-fu", choices=["dire1", "dire2"], default="dire2")
+parser.add_argument("--SIZE", "-si", type=int, default=155)
 parser.add_argument("--AVERAGE", "-av", type=float, default=1)
 parser.add_argument("--DISPERSION", "-di", type=float, default=2)
-parser.add_argument("--MAXNUM", "-mn", type=int, default=3000)
+parser.add_argument("--MAXNUM", "-ma", type=int, default=3000)
 parser.add_argument("--ENV", "-en", default=800)
 args = parser.parse_args()
 

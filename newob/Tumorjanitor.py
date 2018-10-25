@@ -9,12 +9,13 @@ from matplotlib.colors import LinearSegmentedColormap
 
 class Tumor_janitor(Janitor):
     @classmethod
-    def receive_value(cls, func, AVERAGE, DISPERSION, SIZE, MAXNUM, ENV, MTRATE):
+    def receive_value(cls, func, AVERAGE, DISPERSION, SIZE, MAXNUM, ENV, MTRATE, INTERVAL):
         super().receive_value(func, AVERAGE, DISPERSION, SIZE, MAXNUM, ENV)
         Janitor.t = 3
         Janitor.onelist = [0]
         Janitor.twolist = [0]
         Janitor.MTRATE = MTRATE
+        Janitor.INTERVAL = INTERVAL
 
     @classmethod
     def append_cell_num(cls):
@@ -46,14 +47,16 @@ class Tumor_janitor(Janitor):
 
     @classmethod
     def plot_heatmap_graph(cls):
-        Janitor.ax1.plot(Janitor.tlist, Janitor.onelist, label="1: no mutation", color=Janitor.colors[1])
-        Janitor.ax1.plot(Janitor.tlist, Janitor.twolist, label="2: driver mutation", color=Janitor.colors[2])
-        Janitor.ax2.imshow(Janitor.heatmap,interpolation="nearest", cmap=Janitor.cm)
-        plt.pause(0.01)
+        plottime = Janitor.t % Janitor.INTERVAL
+        if plottime == 0:
+            for n in range(1, 3):
+                Janitor.heatmap[0, n - 1] = n
+            Janitor.ax1.plot(Janitor.tlist, Janitor.onelist, label="1: no mutation", color=Janitor.colors[1])
+            Janitor.ax1.plot(Janitor.tlist, Janitor.twolist, label="2: driver mutation", color=Janitor.colors[2])
+            Janitor.ax2.imshow(Janitor.heatmap,interpolation="nearest", cmap=Janitor.cm)
+            plt.pause(0.01)
 
     @classmethod
     def count(cls):
         for n in range(1, 3):
             print("cell{}:{}個".format(n, np.sum(Janitor.heatmap == n)))
-
-    
