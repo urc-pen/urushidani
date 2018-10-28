@@ -22,7 +22,7 @@ parser.add_argument("--ENV", "-en", default=4000)
 parser.add_argument("--MTRATE", "-mt", default=0.01, type=float)
 parser.add_argument("--INTERVAL", "-in", default=50, type=int)
 parser.add_argument("--POISSON", "-po", default=1)
-parser.add_argument("--TUMORSPEED", "-tu", default=2)
+parser.add_argument("--TUMORSPEED", "-tu", default=3)
 args = parser.parse_args()
 
 if args.SIZE % 2 != 1:
@@ -37,6 +37,8 @@ print("環境収容力:{}".format(args.ENV))
 print("ドライバー変異の起きる確率:{}".format(args.MTRATE))
 print("描画のインターバル:{}".format(args.INTERVAL))
 print("ポアソン分布の期待値:{}".format(args.POISSON))
+print("ガン細胞の細胞周期の短くなる割合:{}".format(args.TUMORSPEED))
+
 
 Tumor_cell.receive_value(args.AVERAGE, args.DISPERSION, args.ENV, args.MTRATE, args.TUMORSPEED)
 Tumor_janitor.receive_value(args.func, args.SIZE, args.MAXNUM, args.INTERVAL)
@@ -60,10 +62,7 @@ while Janitor.n < Janitor.MAXNUM:
     Janitor.refresh_heatmap()
 
     for cell in Cell.celllist:
-        if cell.dead == 0:
-            cell.waittime_gamma()
-            if cell.driver_mutation == 0:
-                cell.dead_or_alive(Janitor.field)
+        cell.waittime_gamma()
         cell.update_heatmap(Janitor.heatmap)
 
     Tumor_janitor.append_cell_num()
@@ -79,4 +78,4 @@ Tumor_cell.list_adjust()
 Tumor_cell.make_idlist(Janitor.field)
 Plotter.receive_value(args.POISSON)
 Plotter.plot_mutation(Tumor_cell.idlist, Tumor_cell.driver_list, Plotter.POISSON)
-Plotter.df.to_csv("mutationplot.csv")
+Plotter.df.to_csv("mutationplot_cycle.csv")

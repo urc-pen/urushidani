@@ -9,6 +9,12 @@ from matplotlib.colors import LinearSegmentedColormap
 class Cell:
     num = 0
     celllist = []
+    @classmethod
+    def receive_value(cls, AVERAGE, DISPERSION, ENV):
+        Cell.AVERAGE = AVERAGE
+        Cell.DISPERSION = DISPERSION
+        Cell.ENV = ENV
+
     def __init__(self, i, j):
         self.i = i
         self.j = j
@@ -174,11 +180,10 @@ class Cell:
                     getattr(Cell.celllist[field[on + r - k, on - r]], func)(field)
                     Cell.celllist[field[on + r - k, on - r]].prolife(field)
 
-
-    def waittime_gamma(self, AVERAGE, DISPERSION):
+    def waittime_gamma(self):
         if self.waittime == 0:
-            SHAPE = AVERAGE ** 2 / DISPERSION
-            SCALE = DISPERSION / AVERAGE
+            SHAPE = Cell.AVERAGE ** 2 / Cell.DISPERSION
+            SCALE = Cell.DISPERSION / Cell.AVERAGE
             self.waittime = math.ceil(np.random.gamma(SHAPE, SCALE))
 
     def decide_prolife(self):
@@ -205,15 +210,15 @@ class Cell:
             for j in range(self.j - r, self.j + r + 1):
                 self.num = np.sum(heatmap[i, j] == self.type)
 
-    def waittime_logistic(self, ENV):
-        if self.num < ENV:
-            self.waittime = np.round(self.waittime / (1 - self.num / ENV))
-        elif self.num >= ENV:
+    def waittime_logistic(self):
+        if self.num < Cell.ENV:
+            self.waittime = np.round(self.waittime / (1 - self.num / Cell.ENV))
+        elif self.num >= Cell.ENV:
             self.waittime = 2
 
-    def mortal(self, num, ENV, field):
-        if num < ENV and self.dead == 0:
-            nE = num / ENV
+    def mortal(self, num, field):
+        if num < Cell.ENV and self.dead == 0:
+            nE = num / Cell.ENV
             self.deathflag = np.random.choice([0, 1], p=[1 - nE, nE])
         if self.deathflag == 1:
             self.dead = 1
@@ -222,12 +227,12 @@ class Cell:
         else:
             pass
 
-    def dead_or_alive(self, ENV, field):
+    def dead_or_alive(self, field):
         if self.type == 3:
-            self.mortal(Cell.three_num, ENV, field)
+            self.mortal(Cell.three_num, field)
         if self.type == 4:
-            self.mortal(Cell.four_num, ENV, field)
+            self.mortal(Cell.four_num, field)
         if self.type == 5:
-            self.mortal(Cell.five_num, ENV, field)
+            self.mortal(Cell.five_num, field)
         if self.type == 6:
-            self.mortal(Cell.six_num, ENV, field)
+            self.mortal(Cell.six_num, field)

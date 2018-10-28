@@ -9,12 +9,11 @@ from matplotlib.colors import LinearSegmentedColormap
 
 class Tumor_janitor(Janitor):
     @classmethod
-    def receive_value(cls, func, AVERAGE, DISPERSION, SIZE, MAXNUM, ENV, MTRATE, INTERVAL):
-        super().receive_value(func, AVERAGE, DISPERSION, SIZE, MAXNUM, ENV)
+    def receive_value(cls, func, SIZE, MAXNUM, INTERVAL):
+        super().receive_value(func, SIZE, MAXNUM)
         Janitor.t = 3
         Janitor.onelist = [0]
         Janitor.twolist = [0]
-        Janitor.MTRATE = MTRATE
         Janitor.INTERVAL = INTERVAL
 
     @classmethod

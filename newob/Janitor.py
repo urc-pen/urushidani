@@ -9,16 +9,13 @@ from matplotlib.colors import LinearSegmentedColormap
 class Janitor:
 
     @classmethod
-    def receive_value(cls, func, AVERAGE, DISPERSION, SIZE, MAXNUM, ENV):
+    def receive_value(cls, func, SIZE, MAXNUM):
         Janitor.func = func
-        Janitor.AVERAGE = AVERAGE
-        Janitor.DISPERSION = DISPERSION
         Janitor.SIZE = SIZE                    #フィールドの大きさ
         Janitor.on = int((Janitor.SIZE - 1) / 2)
         Janitor.t = 0
         Janitor.n = 0
         Janitor.MAXNUM = MAXNUM
-        Janitor.ENV = ENV
         Janitor.threelist = [0]
         Janitor.fourlist = [0]
         Janitor.fivelist = [0]
