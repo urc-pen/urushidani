@@ -32,8 +32,8 @@ class Tumor_cell(Cell):
         cell_new = Tumor_cell(ni, nj)
         cell_new.id = len(Cell.celllist)
         self.count += 1
-        self.mutation_id = self.mutation_id * 2
         cell_new.mutation_id = self.mutation_id * 2 + 1
+        self.mutation_id = self.mutation_id * 2
         cell_new.count = self.count
         self.proliferation = 0
         cell_new.driver_mutation = self.driver_mutation
@@ -46,6 +46,7 @@ class Tumor_cell(Cell):
                 self.driver_mutation = 1
                 Tumor_cell.driver_list.append(self.mutation_id)
                 self.driverflag = 0
+                print(self.mutation_id)
         else:
             pass
 
@@ -56,6 +57,7 @@ class Tumor_cell(Cell):
                 cell_new.driver_mutation = 1
                 Tumor_cell.driver_list.append(cell_new.mutation_id)
                 cell_new.driverflag = 0
+                print(cell_new.mutation_id)
         else:
             pass
 

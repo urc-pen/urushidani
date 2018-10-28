@@ -10,58 +10,77 @@ class Plotter:
 
     @classmethod
     def plot_mutation(cls, idlist, mutlist, POISSON):
-        finaldic = {}
+        finaldict = {}
         for i in range(0, len(idlist)):
-            firstdic = {}
-            seconddic = {}
-            thirddic = {}
+            firstdict = {}
+            seconddict = {}
+            thirddict = {}
             varno = idlist[i]
             columnno = idlist[i]
             while varno != 1:
-                if varno in mutlist:
-                    firstdic = {str(varno):np.random.poisson(POISSON) + 1}
-                    seconddic.update(firstdic)
-                else:
-                    firstdic = {str(varno):np.random.poisson(POISSON)}
-                    seconddic.update(firstdic)
+                firstdict = {str(varno):0}
+                seconddict.update(firstdict)
 
                 varno = math.floor(varno / 2)
 
                 if varno == 1:
-                    thirddic = {"cell" + str(columnno):seconddic}
+                    thirddict = {"cell" + str(columnno):seconddict}
                     break
 
-            finaldic.update(thirddic.copy())
-        print(finaldic)
+            finaldict.update(thirddict.copy())
+
+        innerkeys = []
+        innervalues = []
+        for m in range(0, len(idlist)):
+            key = "cell" + str(idlist[m])
+            innerkey = list(finaldict[key].keys())
+            innerkeys.extend(innerkey)
+        innerkeys_unique = list(set(innerkeys))
+        for n in range(0, len(innerkeys_unique)):
+            poi = np.random.poisson(float(POISSON))
+            innervalues.append(poi)
+
+        innerdict = dict(zip(innerkeys_unique,innervalues))
+        keys = list(innerdict.keys())
+        for i in keys:
+            if i in mutlist:
+                innerdict[i] += 1
 
         for m in range(0, len(idlist)):
             key = "cell" + str(idlist[m])
-            innerkey = tuple(finaldic[key].keys())
+            innerkey = list(finaldict[key].keys())
             for i in innerkey:
-                element = finaldic[key][i]
-                if element == 1 or element == 0:
+                finaldict[key][i] = innerdict[i]
+
+        for m in range(0, len(idlist)):
+            key = "cell" + str(idlist[m])
+            innerkey = list(finaldict[key].keys())
+            for i in innerkey:
+                element = finaldict[key][i]
+                if element == 0:
+                    del finaldict[key][i]
+
+                if element == 1:
                     if int(i) in mutlist:
-                        del finaldic[key][i]
-                        finaldic[key]["D" + i] = element
+                        del finaldict[key][i]
+                        finaldict[key]["D" + i] = element
                     else:
-                        del finaldic[key][i]
-                        finaldic[key]["N" + i] = element
+                        del finaldict[key][i]
+                        finaldict[key]["N" + i] = element
 
                 if element >= 2:
                     if int(i) in mutlist:
-                        del finaldic[key][i]
-                        finaldic[key]["D" + i] = 1
+                        del finaldict[key][i]
+                        finaldict[key]["D" + i] = 1
                     else:
-                        del finaldic[key][i]
-                        finaldic[key]["N" + i] = 1
+                        del finaldict[key][i]
+                        finaldict[key]["N" + i] = 1
 
                     for j in range(2, element + 1):
-                        finaldic[key]["N" + i + "_" + str(j)] = 1
+                        finaldict[key]["N" + i + "_" + str(j)] = 1
                 else:
                     pass
 
-        print(finaldic)
-
-        df1 = pd.DataFrame(finaldic)
+        df1 = pd.DataFrame(finaldict)
         df2 = df1.fillna(0)
         Plotter.df = df2.astype(int)
