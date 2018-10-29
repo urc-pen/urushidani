@@ -14,7 +14,7 @@ class Tumor_cell(Cell):
     def receive_value(cls,AVERAGE, DISPERSION, ENV, MTRATE, TUMORSPEED):
         super().receive_value(AVERAGE, DISPERSION, ENV)
         Cell.MTRATE = MTRATE
-        Cell.TUMORSPEED = TUMORSPEED
+        Cell.TUMORSPEED = float(TUMORSPEED)
 
 
     def __init__(self, i, j):
@@ -141,3 +141,9 @@ class Tumor_cell(Cell):
                 SHAPE = ( Cell.AVERAGE / Cell.TUMORSPEED ) ** 2 / Cell.DISPERSION
                 SCALE = Cell.DISPERSION / ( Cell.AVERAGE / Cell.TUMORSPEED )
                 self.waittime = math.ceil(np.random.gamma(SHAPE / 2, SCALE / 2))
+
+    def tumor_dead_or_alive(self, field):
+        if self.dead == 0:
+            self.waittime_gamma()
+            if self.driver_mutation == 0:
+                self.dead_or_alive(field)
